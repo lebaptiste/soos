@@ -14,11 +14,9 @@ func Capture(f *os.File) (dump func() ([]byte, error)) {
 	var err error
 	source := *f
 	var buf bytes.Buffer
-	w := io.MultiWriter(&buf, &source)
-	_ = w
+	w := io.MultiWriter(&source, &buf)
 
 	r, out, err := os.Pipe()
-
 	if err != nil {
 		return func() ([]byte, error) { return nil, err }
 	}
@@ -36,6 +34,9 @@ func Capture(f *os.File) (dump func() ([]byte, error)) {
 		out.Close()
 		*f = source
 		wg.Wait()
+		if err != nil {
+			return nil, err
+		}
 		txt := buf.Bytes()
 		return txt, nil
 	}
